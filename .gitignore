@@ -1,0 +1,8 @@
+# you should create these
+# dirs yourself
+config.json
+nginx.conf
+dnsmasq.conf
+
+bin/
+go.sum

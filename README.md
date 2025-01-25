@@ -1,51 +1,42 @@
-# UGOSERVER
+# ugoserver
 
-## what the hell is this ???
-This is a little side/hobby project I've taken on after not being satisfied with the current state of pbsds' hatena-server. Besides, the dependency on Sudomemo's DNS and authentication server and its implementation in hatena-server makes my head hurt.
-
-The code may be messy, as I am a novice programmer in Go and this is my first real project in it.
-
-
-## why ???
-Why not?
-
-
-## when ???
-As I'm rather busy with life at the moment and succumb to burnout like anyone else does, commits may be few and far between, but I try to work on this whenever I feel I can. No guarantees/ETAs for completeness or features are made.
+## overview
+Ugoserver is a replacement server for Flipnote Studio's online functionality, Flipnote Hatena
+<br>Issues and pull requests are welcome
 <br>
-As of right now, viewing and uploading flipnotes works. Currently I'd like to add support for mail, sorting by hot/top flipnotes, comments/user account system and a pleasing website for it. Don't expect anything, however. I work on this when I find that I have the time and motivation, which is rarely nowadays.
+<br>As part of development, I've written a library to convert to/from the image formats that Flipnote Studio uses. Namely npf, nbf, ntft and ppm. You can find this in the img folder
 
-## how ???
-Using [nds-constrain't](https://github.com/KaeruTeam/nds-constraint), the DS can be tricked into thinking that certificates signed using the Wii's client CA are legitimate and valid.
+## quick setup
+A few things need to be done prior to starting the server, namely
+* ensure your system's SSL library supports RC4-MD5 or RC4-SHA ciphers. They're weak, but they're all the DSi supports. You can enable these in openssl at compile time with enable-ssl3, enable-ssl3-method, enable-weak-ssl-ciphers options, after that enable the legacy provider in the system configuration and set the SECLEVEL to 0 (it's insecure... but it's required to enable those ancient ciphersuites)
+* generate bogus nintendo CA signed certs for flipnote.hatena.com, nas.nintendowifi.net (and ugomemo.hatena.ne.jp if you want to use japanese region flipnote studio with this). The commands to do this can be found in the nds-constraint github repository
+* install PostgreSQL. A script to create all necessary tables/functions is available, use that, and insert any required data, like channels manually
+* compile the server, there is a makefile provided to make this easy
+* change the configuration as necessary. At a minimum, you need to set the options related to the database, so that it can connect, and the options for the directories with static content. an example is available
+* configure a reverse proxy to redirect queries to this server @ port 9000. an example nginx config is available
+* configure a dns to redirect flipnote's queries to this server. example dnsmasq and bind9 named config are available
+* start the server. It will attempt to read the configuration file as the first argument passed (others ignored), and will default to config.json in the current working directory if not found.
+<br>you should be able to set the dns and connect after doing all of this.
+<br>Templates will be read from dir/static/template/\*.html, predefined menus from dir/static/menu/\*.json, text content from dir/static/txt (dir is set in the config file)
+<br>
+<br>2xxxx, 33xxx codes mean something is up, possibly with dns/nas
+<br>304xxx means something is up with the html/menu bits of online mode
+<br>304001 usually appears when the console received a response, but no data
+<br>304605 can mean a variety of things and isn't easy to diagnose. HTTP status codes are also displayed as 304xxx
 
-The way the server works has changed a little bit<br>
-It no longer relies on docker, so the amd64 limitation has mostly been lifted<br>
-Compile your distro's release of openssl with the enable-ssl3, enable-ssl3-method and enable-weak-ssl-ciphers flags. Make sure you don't have no-legacy, otherwise you won't be able to use the legacy provider in openssl in order to enable the very limited ssl ciphers that the DS supports (RC4-SHA and RC4-MD5).<br>
+## current state
+I have quite a few things planned for this server, so maybe there will be more commits pushed here
+<br>a current todo list is available in the code
+<br>at some point I wish to make a wiki for this, but that's after all of the core functionality is done
 
-## Setup
-* Create a certificate for your server using the commands in the nds-constraint github repo linked below, and put them in `crt/common.crt` and `crt/common.key`. You should add a SAN (subject alternative name) for `ugomemo.hatena.ne.jp`, unless you plan on not using the japanese region flipnote studio
-* Install postgresql. The database format might change at any point, so look at db.go for a reference of what you need in the table
-* Change the ip in dnsmasq.conf and the nginx configuration (an example is provided, you should create a site in your installed version though) to wherever you want your request redirected
-* Start the server. Without passing any command line arguments to it, it will attempt to read `default.json` in the current working directory. You can use a different config by passing the path to it as the first command line argument. The rest are ignored.
-* Set the primary DNS on your console correctly and (!) set the secondary DNS to what you use. This is important, as the provided dnsmasq configuration will only redirect the servers that are hardcoded into the app.
-<br>Flipnote studio should now be able to connect to your replacement hatena server.
-
-
-## Notes
-Some things I observed while developing this are available in notes.md, and contains status quo on some features.
-Commits might be giant and happen in the middle of nowhere containing a lot of changes from where i got sudden bursts of motivation
-
-## Contributing
-Issues and pull requests are welcome.
-
-I try to comment code as much as possible, maybe even when not needed, but I believe extra documentation for things that may seem obvious is better than no documentation.
-
-If you have original flipnote hatena captures, that would be SUPER helpful. Please send them over, you can find my contacts on [my web page](https://floc.root.sx/about.html).
-
+## support development $$
+This is all a big hobby project. It's MIT licensed. If you want to run your paid server or whatever, feel free to do so. I do not care
+<br>However, if you'd like to see more of this server, you can support me by donating via [paypal](https://www.paypal.com/donate/?hosted_button_id=YFLWW24WGMGS8)
+<br> 65.40 ukrainian hryvnia buys me a monster energy drink, that's about $1.70, this is my lifeblood
 
 ## Credits & Thanks
-Original [hatena-server](https://github.com/pbsds/hatena-server) - pbsds
-<br>flipnote hatena dumps (thank you a lot!) - pbsds
+Original [hatena-server](https://github.com/pbsds/hatena-server), some code was helpful in understanding how Flipnote works - pbsds
+<br>flipnote hatena assets (thanks a bunch) - pbsds
 <br>[nds-constrain't](https://github.com/KaeruTeam/nds-constraint) - Project Kaeru
-<br>Extensive flipnote format documentation [here](https://github.com/Flipnote-Collective/flipnote-studio-docs/wiki) and [here](https://github.com/pbsds/hatena-server/wiki)
+<br>Very good format documentation [here](https://github.com/Flipnote-Collective/flipnote-studio-docs/wiki) and [here](https://github.com/pbsds/hatena-server/wiki)
 <br>and likely others...

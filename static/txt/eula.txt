@@ -1,2 +1,4 @@
-if you are reading this, you have successfully connected to your hatena server!
-good luck and have fun with it
+floc test server
+this is still in its infancy. be gentle with it, but also do stuff to it so i can find bugs
+
+thx
