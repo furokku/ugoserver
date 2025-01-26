@@ -209,8 +209,8 @@ func main() {
 
     h.Path("/ds/{reg:v2-(?:us|eu|jp)}/flipnote.post").Methods("POST").HandlerFunc(dsi_am(moviePost, true, false))
 
-    h.Path("/ds/{reg:v2-(?:us|eu|jp)}/movie/{movieid}.{ext:(?:ppm|htm|info|dl)}").Methods("GET").HandlerFunc(dsi_am(movieHandler, false, false))
-    h.Path("/ds/{reg:v2-(?:us|eu|jp)}/movie/{movieid}.{ext:(?dl)}").Methods("POST").HandlerFunc(dsi_am(movieHandler, false, false))
+    h.Path("/ds/{reg:v2-(?:us|eu|jp)}/movie/{movieid}.{ext:(?:ppm|htm|info)}").Methods("GET").HandlerFunc(dsi_am(movieHandler, false, false))
+    h.Path("/ds/{reg:v2-(?:us|eu|jp)}/movie/{movieid}.{ext:(?:dl)}").Methods("POST").HandlerFunc(dsi_am(movieHandler, false, false))
     h.Path("/ds/{reg:v2-(?:us|eu|jp)}/movie/{movieid}.{ext:(?:delete)}").Methods("POST").HandlerFunc(dsi_am(movieHandler, true, false))
 
     // stars
@@ -248,7 +248,7 @@ func main() {
         infolog.Printf("started http server")
         err := hatena.ListenAndServe()
         if err != http.ErrServerClosed {
-            errorlog.Fatalf("server error: %v", err)
+            errorlog.Printf("server error: %v", err)
         }
     }()
 
