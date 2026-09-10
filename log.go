@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strings"
 )
 
 var (
@@ -43,7 +44,7 @@ func (e *env) logger(next http.Handler) http.Handler {
 
 		// ignore bots and etc.
 		if e.cnf.UseHosts { // && strings.HasPrefix(r.URL.Path, "/ds") { -- There really isn't any other good way to stop log spam other than only allowing proper domains
-			if !slices.Contains(e.cnf.Hosts, r.Host) || (ua != "" && ua != "Nitro WiFi SDK/5.1") {
+			if !slices.Contains(e.cnf.Hosts, r.Host) || (strings.HasPrefix(r.URL.Path, "/ds") && ua != "" && ua != "Nitro WiFi SDK/5.1") {
 				w.Write([]byte("you may not access this resource in this way"))
 				return
 			}
