@@ -1,9 +1,5 @@
 {
-    "_comment_f": "ip to bind to",
     "listen": "0.0.0.0",
-
-    "_comment_g": "socket name for ipc. Only change this when running two instances of ugoserver",
-    "socket": "ugoserver",
 
     "_comment_a": "domain that will be used for links in ugomenus. set this correctly!",
     "root": "flipnote.hatena.com",
