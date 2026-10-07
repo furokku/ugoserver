@@ -55,7 +55,7 @@ func (e *env) movieHandler(w http.ResponseWriter, r *http.Request) {
     switch ext {
     case "dl":
         // todo: track user's downloads (and maybe views)
-        err := updateDlCount(e.pool, id)
+        err := e.pool.updateDlCount(id)
         if err != nil {
             errorlog.Printf("while updating dl count: %v", err)
             w.WriteHeader(http.StatusInternalServerError)
@@ -67,14 +67,16 @@ func (e *env) movieHandler(w http.ResponseWriter, r *http.Request) {
     case "delete":
         tx, _ := e.pool.Begin(context.Background())
         defer tx.Commit(context.Background())
+        
+        txwrap := &DB{tx}
 
-        if err := deleteMovie(tx, id); err != nil {
+        if err := txwrap.deleteMovie(id); err != nil {
             errorlog.Printf("while deleting %d: %v", id, err)
             w.WriteHeader(http.StatusInternalServerError)
             return
         }
         
-        if err := setCodeInvalid(tx, "movie", id); err != nil {
+        if err := txwrap.setCodeInvalid("movie", id); err != nil {
             tx.Rollback(context.Background())
             infolog.Printf("transaction rollback")
 
@@ -118,7 +120,7 @@ func (e *env) moviePost(w http.ResponseWriter, r *http.Request) {
     // validation is done by middleware
     s := e.sessions[r.Header.Get("X-Dsi-Sid")]
     
-    if d, err := getUserMovieRatelimit(e.pool, s.UserID); err != nil {
+    if d, err := e.pool.getUserMovieRatelimit(s.UserID); err != nil {
         errorlog.Printf("while checking user ratelimit: %v", err)
         w.WriteHeader(http.StatusInternalServerError)
         return
@@ -184,8 +186,10 @@ func (e *env) moviePost(w http.ResponseWriter, r *http.Request) {
 //  debuglog.Printf("received ppm body from %v %v %v", session.fsid, session.username, afn)
     tx, _ := e.pool.Begin(context.Background())
     defer tx.Rollback(context.Background())
+    
+    txwrap := &DB{tx}
 
-    id, err := addMovie(tx, nm)
+    id, err := txwrap.addMovie(nm)
     if err != nil {
         switch err {
         case ErrMovieExists:
@@ -250,7 +254,7 @@ func (e *env) starMovie(w http.ResponseWriter, r *http.Request) {
         color = "yellow"
     }
     
-    if err := updateMovieStars(e.pool, s.UserID, id, color, count); err != nil {
+    if err := e.pool.updateMovieStars(s.UserID, id, color, count); err != nil {
         errorlog.Printf("while updating star count for %d (user %d): %v", id, s.UserID, err)
         w.WriteHeader(http.StatusInternalServerError)
         return
@@ -279,7 +283,7 @@ func (e *env) movieFeed(w http.ResponseWriter, r *http.Request) {
     }
 
     // get movies
-    flipnotes, total, err := getFrontMovies(e.pool, sort, p)
+    flipnotes, total, err := e.pool.getFrontMovies(sort, p)
     if err != nil {
         errorlog.Printf("while getting feed flipnotes: %v", err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -469,8 +473,10 @@ func (e *env) replyPost(w http.ResponseWriter, r *http.Request) {
     // undo if can't write file
     tx, _ := e.pool.Begin(context.Background())
     defer tx.Rollback(context.Background())
+    
+    txwrap := &DB{tx}
 
-    id, err := addMovieCommentMemo(tx, s.UserID, movieid)
+    id, err := txwrap.addMovieCommentMemo(s.UserID, movieid)
     if err != nil {
         debuglog.Printf("tx rollback")
         errorlog.Printf("while adding movie reply to database: %v", err)
@@ -557,7 +563,7 @@ func (e *env) movieChannelFeed(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusBadRequest)
         return
     }
-    chs, chl, err := getChannelInfo(e.pool, chid)
+    chs, chl, err := e.pool.getChannelInfo(chid)
     if err != nil {
         errorlog.Printf("while getting channel %d info: %v", chid, err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -565,7 +571,7 @@ func (e *env) movieChannelFeed(w http.ResponseWriter, r *http.Request) {
     }
 
     // get movies
-    flipnotes, total, err := getChannelMovies(e.pool, chid, sort, p)
+    flipnotes, total, err := e.pool.getChannelMovies(chid, sort, p)
     if err != nil {
         errorlog.Printf("while getting channel flipnotes: %v", err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -621,7 +627,7 @@ func (e *env) channelMainMenu(w http.ResponseWriter, r *http.Request) {
     menu.setLayout(3, 4)
     
     // get first 8 channels
-    chs, err := getChannelList(e.pool, 0)
+    chs, err := e.pool.getChannelList(0)
     if err != nil {
         errorlog.Printf("while getting main channels: %v", err)
         w.WriteHeader(http.StatusInternalServerError)

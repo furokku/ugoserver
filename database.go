@@ -89,7 +89,7 @@ const (
 //
 
 // getMoviesList() returns a list of 50 movies and the total according to the provided SQL statement
-func getMoviesList(db dbhandle, stmt string, args ...any) ([]Movie, int, error) {
+func (db DB) getMoviesList(stmt string, args ...any) ([]Movie, int, error) {
 
     var memos []Movie
     var t int
@@ -118,7 +118,7 @@ func getMoviesList(db dbhandle, stmt string, args ...any) ([]Movie, int, error) 
     return memos, t, nil
 }
 
-func getMovieById(db dbhandle, movieid int) (Movie, error) {
+func (db DB) getMovieById(movieid int) (Movie, error) {
     var m Movie
     s := make([]int, 5)
 
@@ -135,7 +135,7 @@ func getMovieById(db dbhandle, movieid int) (Movie, error) {
     return m, nil
 }
 
-func getMovieByIdUpdView(db dbhandle, movieid int) (Movie, error) {
+func (db DB) getMovieByIdUpdView(movieid int) (Movie, error) {
     var m Movie
     s := make([]int, 5)
 
@@ -153,7 +153,7 @@ func getMovieByIdUpdView(db dbhandle, movieid int) (Movie, error) {
 }
 
 // returns movies thru getMoviesList based on the mode and page
-func getFrontMovies(db dbhandle, sm string, p int) ([]Movie, int, error) {
+func (db DB) getFrontMovies(sm string, p int) ([]Movie, int, error) {
     var q string
     
     switch sm { // sort mode
@@ -168,11 +168,11 @@ func getFrontMovies(db dbhandle, sm string, p int) ([]Movie, int, error) {
         warnlog.Printf("invalid sort mode %s", sm)
     }
 
-    return getMoviesList(db, q, p)
+    return db.getMoviesList(q, p)
 }
 
 //  does the same as getFrontMovies, but from a specific channel
-func getChannelMovies(db dbhandle, id int, sm string, p int) ([]Movie, int, error) {
+func (db DB) getChannelMovies(id int, sm string, p int) ([]Movie, int, error) {
     var q string
 
     switch sm {
@@ -186,16 +186,16 @@ func getChannelMovies(db dbhandle, id int, sm string, p int) ([]Movie, int, erro
         q = SQL_MOVIE_GET_CHANNEL_NEW
         warnlog.Printf("invalid sort mode %s", sm)
     }
-    return getMoviesList(db, q, p, id)
+    return db.getMoviesList(q, p, id)
 }
 
 // add record for a movie
-func addMovie(db dbhandle, m Movie) (int, error) {
+func (db DB) addMovie(m Movie) (int, error) {
     var new_movieid int
 
     // check if flipnote has already been uploaded
     // using filename (they are always unique)
-    if exists, err := checkMovieExistsAfn(db, m.AuFN); err != nil {
+    if exists, err := db.checkMovieExistsAfn(m.AuFN); err != nil {
         return 0, err
     } else if exists {
         return 0, ErrMovieExists
@@ -209,7 +209,7 @@ func addMovie(db dbhandle, m Movie) (int, error) {
 }
 
 // mark movie as deleted
-func deleteMovie(db dbhandle, movieid int) error {
+func (db DB) deleteMovie(movieid int) error {
     if _, err := db.Exec(context.Background(), SQL_MOVIE_DELETE, movieid); err != nil {
         return err
     }
@@ -217,7 +217,7 @@ func deleteMovie(db dbhandle, movieid int) error {
 }
 
 // update # of downloads on movie
-func updateDlCount(db dbhandle, movieid int) error {
+func (db DB) updateDlCount(movieid int) error {
     if _, err := db.Exec(context.Background(), SQL_MOVIE_UPDATE_DL, movieid); err != nil {
         return err
     }
@@ -225,7 +225,7 @@ func updateDlCount(db dbhandle, movieid int) error {
 }
 
 // checks whether a movie has already been uploaded by looking for a movie with the same filename
-func checkMovieExistsAfn(db dbhandle, afn string) (bool, error) {
+func (db DB) checkMovieExistsAfn(afn string) (bool, error) {
     var exists bool
 
     err := db.QueryRow(context.Background(), SQL_MOVIE_CHECK_EXISTS_AFN, afn).Scan(&exists)
@@ -242,7 +242,7 @@ func checkMovieExistsAfn(db dbhandle, afn string) (bool, error) {
 //
 
 // return the name and description of a channel by its ID
-func getChannelInfo(db dbhandle, id int) (string, string, error) {
+func (db DB) getChannelInfo(id int) (string, string, error) {
     var s, l string
 
     if err := db.QueryRow(context.Background(), SQL_CHANNEL_GET_DESC_BY_ID, id).Scan(&s, &l); err != nil {
@@ -253,7 +253,7 @@ func getChannelInfo(db dbhandle, id int) (string, string, error) {
 }
 
 // returns a list of channels, page 0 - first 8, >0 - paginated x15
-func getChannelList(db dbhandle, page int) ([]Channel, error) {
+func (db DB) getChannelList(page int) ([]Channel, error) {
     var rows pgx.Rows
     var err error
 
@@ -289,7 +289,7 @@ func getChannelList(db dbhandle, page int) ([]Channel, error) {
 //
 
 // for drawn comments we only need to imply about its existence
-func addMovieCommentMemo(db dbhandle, userid int, movieid int) (int, error) {
+func (db DB) addMovieCommentMemo(userid int, movieid int) (int, error) {
     var id int
     if err := db.QueryRow(context.Background(), SQL_COMMENT_ADD_MEMO, userid, movieid).Scan(&id); err != nil {
         return 0, err
@@ -298,7 +298,7 @@ func addMovieCommentMemo(db dbhandle, userid int, movieid int) (int, error) {
 }
 
 // returns the comments on a movie, with pagination
-func getMovieComments(db dbhandle, movieid int, page int) ([]Comment, error) {
+func (db DB) getMovieComments(movieid int, page int) ([]Comment, error) {
     var comments []Comment
 
     // comment content
@@ -331,7 +331,7 @@ func getMovieComments(db dbhandle, movieid int, page int) ([]Comment, error) {
 //
 
 // add stars to a movie
-func updateMovieStars(db dbhandle, userid int, movieid int, color string, count int) error {
+func (db DB) updateMovieStars(userid int, movieid int, color string, count int) error {
     var c int
     switch color {
     case "yellow":
@@ -354,7 +354,7 @@ func updateMovieStars(db dbhandle, userid int, movieid int, color string, count 
 }
 
 // get stars a user has received across all of their movies
-func getUserStars(db dbhandle, userid int) ([]int, error) {
+func (db DB) getUserStars(userid int) ([]int, error) {
     s := make([]int, 5)
     
     if err := db.QueryRow(context.Background(), SQL_USER_GET_STARS, userid).Scan(&s); err != nil {
@@ -370,7 +370,7 @@ func getUserStars(db dbhandle, userid int) ([]int, error) {
 //
 
 // input code -> output type(movie,channel,user) and id of whatever thing
-func getResByCode(db dbhandle, code string) (string, int, error) {
+func (db DB) getResByCode(code string) (string, int, error) {
     var t string
     var i int
     if err := db.QueryRow(context.Background(), SQL_JUMPCODE_GET_RESOURCE, code).Scan(&t, &i); err == pgx.ErrNoRows {
@@ -382,7 +382,7 @@ func getResByCode(db dbhandle, code string) (string, int, error) {
     return t, i, nil
 }
 
-func getCodeByRes(db dbhandle, t string, id int) (string, error) {
+func (db DB) getCodeByRes(t string, id int) (string, error) {
     var code string
 
     if err := db.QueryRow(context.Background(), SQL_JUMPCODE_GET_CODE, t, id).Scan(&code); err != nil {
@@ -392,7 +392,7 @@ func getCodeByRes(db dbhandle, t string, id int) (string, error) {
 }
 
 // invalidate the code when something is deleted
-func setCodeInvalid(db dbhandle, t string, id int) error {
+func (db DB) setCodeInvalid(t string, id int) error {
     if _, err := db.Exec(context.Background(), SQL_JUMPCODE_SET_INACTIVE, t, id); err != nil {
         return err
     }
@@ -405,7 +405,7 @@ func setCodeInvalid(db dbhandle, t string, id int) error {
 //
 
 // adds an FSID to the auth whitelist, so that it immediately passes validation
-func whitelistAddFsid(db dbhandle, fsid string) error {
+func (db DB) whitelistAddFsid(fsid string) error {
     if _, err := db.Exec(context.Background(), SQL_WHITELIST_FSID_ADD, fsid); err != nil {
         return err
     }
@@ -413,7 +413,7 @@ func whitelistAddFsid(db dbhandle, fsid string) error {
 }
 
 // removes an FSID from the auth whitelist
-func whitelistDelFsid(db dbhandle, fsid string) error {
+func (db DB) whitelistDelFsid(fsid string) error {
     if _, err := db.Exec(context.Background(), SQL_WHITELIST_FSID_DELETE, fsid); err != nil {
         return err
     }
@@ -421,7 +421,7 @@ func whitelistDelFsid(db dbhandle, fsid string) error {
 }
 
 // checks whether an FSID is in the auth whitelist
-func whitelistQueryFsid(db dbhandle, fsid string) (bool, error) {
+func (db DB) whitelistQueryFsid(fsid string) (bool, error) {
     var v bool
     err := db.QueryRow(context.Background(), SQL_WHITELIST_FSID_CHECK, fsid).Scan(&v)
     if err != nil {
@@ -436,7 +436,7 @@ func whitelistQueryFsid(db dbhandle, fsid string) (bool, error) {
 //
 
 // returns only bool whether banned
-func checkIsBanned(db dbhandle, affected string) (bool, error) {
+func (db DB) checkIsBanned(affected string) (bool, error) {
     var exists bool
     err := db.QueryRow(context.Background(), SQL_USER_BAN_CHECK, affected).Scan(&exists)
     if err != nil {
@@ -446,7 +446,7 @@ func checkIsBanned(db dbhandle, affected string) (bool, error) {
 }
 
 // returns bool whether banned and ban info
-func queryBan(db dbhandle, affected string) (*Ban, error) {
+func (db DB) queryBan(affected string) (*Ban, error) {
     b := Ban{}
     err := db.QueryRow(context.Background(), SQL_USER_BAN_QUERY, affected).Scan(&b.ID, &b.Issuer, &b.Message, &b.Issued, &b.Expires, &b.Pardon, &b.Affected)
     if err != nil {
@@ -461,9 +461,9 @@ func queryBan(db dbhandle, affected string) (*Ban, error) {
 }
 
 // ban a specific IP/FSID, optionally not banning if another ban has not yet expired
-func issueBan(db dbhandle, iss string, exp time.Time, affected string, msg string, ce bool) error {
+func (db DB) issueBan(iss string, exp time.Time, affected string, msg string, ce bool) error {
     if ce {
-        if b, err := checkIsBanned(db, affected); err != nil {
+        if b, err := db.checkIsBanned(affected); err != nil {
             return err
         } else if b {
             return ErrAlreadyBanned
@@ -479,7 +479,7 @@ func issueBan(db dbhandle, iss string, exp time.Time, affected string, msg strin
 
 // pardon a ban by its ID when given an integer argument
 // and the latest active ban on an FSID or IP when given a string argument
-func pardonBan(db dbhandle, in any) error {
+func (db DB) pardonBan(in any) error {
     switch in.(type) {
     case int:
         if _, err := db.Exec(context.Background(), SQL_USER_PARDON_BY_ID, in); err != nil {
@@ -499,7 +499,7 @@ func pardonBan(db dbhandle, in any) error {
 //
 
 // (use only on dsi part) adds a record for the new user and returns its id
-func registerUserDsi(db dbhandle, username string, password string, fsid string, ip string) (int, error) {
+func (db DB) registerUserDsi(username string, password string, fsid string, ip string) (int, error) {
     var userid int
     if err := db.QueryRow(context.Background(), SQL_USER_REGISTER_DSI, username, password, fsid, ip).Scan(&userid); err != nil {
         return 0, err
@@ -508,7 +508,7 @@ func registerUserDsi(db dbhandle, username string, password string, fsid string,
 }
 
 // returns true/false if the user's password matches based on id
-func verifyUserById(db dbhandle, userid int, password string, ip... string) (bool, error) {
+func (db DB) verifyUserById(userid int, password string, ip... string) (bool, error) {
     v := false
     if err := db.QueryRow(context.Background(), SQL_USER_VERIFY_BY_ID, userid, password).Scan(&v); err != nil {
         return false, err
@@ -523,7 +523,7 @@ func verifyUserById(db dbhandle, userid int, password string, ip... string) (boo
 
 // TODO: consolidate?
 // returns true/false if the user's password matches based on fsid (alternative login method)
-func verifyUserByFsid(db dbhandle, fsid string, password string, ip... string) (bool, error) {
+func (db DB) verifyUserByFsid(fsid string, password string, ip... string) (bool, error) {
     v := false
     if err := db.QueryRow(context.Background(), SQL_USER_VERIFY_BY_FSID, fsid, password).Scan(&v); err != nil {
         return false, err
@@ -538,7 +538,7 @@ func verifyUserByFsid(db dbhandle, fsid string, password string, ip... string) (
 
 
 // returns a user by fsid (returns uninitialized array if not found)
-func getUserByFsid(db dbhandle, fsid string) (User, error) {
+func (db DB) getUserByFsid(fsid string) (User, error) {
     u := User{}
     es := make([]int, 5)
     if err := db.QueryRow(context.Background(), SQL_USER_GET_BY_FSID, fsid).Scan(&u.ID, &u.Username, &u.Admin, &u.FSID, &u.LastLoginTime, &u.LastLoginIP, &es); err != nil {
@@ -556,7 +556,7 @@ func getUserByFsid(db dbhandle, fsid string) (User, error) {
 }
 
 // same but for id
-func getUserById(db dbhandle, id int) (User, error) {
+func (db DB) getUserById(id int) (User, error) {
     u := User{}
     es := make([]int, 5)
     if err := db.QueryRow(context.Background(), SQL_USER_GET_BY_ID, id).Scan(&u.ID, &u.Username, &u.Admin, &u.FSID, &u.LastLoginTime, &u.LastLoginIP, &es); err != nil {
@@ -572,7 +572,7 @@ func getUserById(db dbhandle, id int) (User, error) {
     return u, nil
 }
 
-func getUserApiToken(db dbhandle, secret string) (User, error) {
+func (db DB) getUserApiToken(secret string) (User, error) {
     u := User{}
     es := make([]int, 5)
 
@@ -590,7 +590,7 @@ func getUserApiToken(db dbhandle, secret string) (User, error) {
 }
 
 // returns true/false is user is ratelimited and when the ratelimit is lifted
-func getUserMovieRatelimit(db dbhandle, userid int) (*time.Time, error) {
+func (db DB) getUserMovieRatelimit(userid int) (*time.Time, error) {
     var d *time.Time
     
     if err := db.QueryRow(context.Background(), SQL_USER_RATELIMIT, userid).Scan(&d); err != nil {
@@ -606,7 +606,7 @@ func getUserMovieRatelimit(db dbhandle, userid int) (*time.Time, error) {
 //
 
 // generates token for api/account
-func newApiToken(db dbhandle, userid int) (string, error) {
+func (db DB) newApiToken(userid int) (string, error) {
     var exists bool
     var secret string
     
@@ -626,7 +626,7 @@ func newApiToken(db dbhandle, userid int) (string, error) {
     return secret, nil
 }
 
-func getApiTokenUserId(db dbhandle, secret string) (int, error) {
+func (db DB) getApiTokenUserId(secret string) (int, error) {
     var userid int
 
     if err := db.QueryRow(context.Background(), SQL_APITOKEN_GET_USERID, secret).Scan(&userid); err != nil {
@@ -643,6 +643,6 @@ func getApiTokenUserId(db dbhandle, secret string) (int, error) {
 
 // stub
 // Invalidate token prematurely
-func destroyApiToken(db dbhandle, secret string) error {
+func (db DB) destroyApiToken(secret string) error {
     return nil
 }

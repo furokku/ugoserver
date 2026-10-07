@@ -268,7 +268,7 @@ func initenv() (*env, error) {
         return nil, err
     }
     
-    e.pool = db
+    e.pool = &DB{db}
     infolog.Printf("connected to database (user=%s db=%s)", e.cnf.DB.User, e.cnf.DB.Name)
     
     if err := e.initrsa(); err != nil {

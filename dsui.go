@@ -38,7 +38,7 @@ func (e *env) movieui(w http.ResponseWriter, r *http.Request) {
     }
 
     // make it return a 404 if not found
-    movie, err := getMovieByIdUpdView(e.pool, id)
+    movie, err := e.pool.getMovieByIdUpdView(id)
     if err != nil {
         switch err {
         case ErrNoMovie:
@@ -60,7 +60,7 @@ func (e *env) movieui(w http.ResponseWriter, r *http.Request) {
     
     d["movie"] = movie
 
-    au, err := getUserById(e.pool, movie.AuUserID)
+    au, err := e.pool.getUserById(movie.AuUserID)
     if err != nil {
         errorlog.Printf("while getting user %d (movie view): %v", movie.AuUserID, err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -68,7 +68,7 @@ func (e *env) movieui(w http.ResponseWriter, r *http.Request) {
     }
     d["author"] = au
     
-    jc, err := getCodeByRes(e.pool, "movie", movie.ID)
+    jc, err := e.pool.getCodeByRes("movie", movie.ID)
     if err != nil {
         errorlog.Printf("while getting jump code for movie %d: %v", movie.ID, err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -93,7 +93,7 @@ func (e *env) jump(w http.ResponseWriter, r *http.Request) {
         return
     }
     
-    t, id, err := getResByCode(e.pool, jc)
+    t, id, err := e.pool.getResByCode(jc)
     if err != nil {
         errorlog.Printf("while getting resource at jumpcode %s: %v", jc, err)
         w.Header()["X-DSi-Dialog-Type"] = []string{"1"}
@@ -138,12 +138,12 @@ func (e *env) replyui(w http.ResponseWriter, r *http.Request) {
         return
     }
     
-    movie, err := getMovieById(e.pool, id)
+    movie, err := e.pool.getMovieById(id)
     if err != nil {
         w.WriteHeader(http.StatusNotFound)
     }
     
-    comments, err := getMovieComments(e.pool, id, p)
+    comments, err := e.pool.getMovieComments(id, p)
     if err != nil {
         errorlog.Printf("while getting comments for flipnote %v: %v", id, err)
         w.WriteHeader(http.StatusInternalServerError)
@@ -225,7 +225,7 @@ func (e *env) profile(w http.ResponseWriter, r *http.Request) {
     
     // get profile
     // todo implement user preferences stuff
-    u, err := getUserById(e.pool, view)
+    u, err := e.pool.getUserById(view)
     if err != nil {
         switch err {
         case ErrNoUser:
@@ -240,7 +240,7 @@ func (e *env) profile(w http.ResponseWriter, r *http.Request) {
     }
 	
 	// get that user's stars
-	us, err := getUserStars(e.pool, u.ID)
+	us, err := e.pool.getUserStars(u.ID)
 	if err != nil {
 		errorlog.Printf("while getting user %d stars (profile view): %v", view, err)
 		w.WriteHeader(http.StatusInternalServerError)

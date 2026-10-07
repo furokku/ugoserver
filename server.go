@@ -36,6 +36,10 @@ package main
 // in ukraine. Oh how far I've come.
 // 14th of august, 2025, 7:19pm-GMT-5:
 // why cant we run a fucking bus in america
+//
+// 04/01/2026
+// note to self: make some changes to only have handlers be methods on env
+// probably also make the logger not global :/
 
 import (
 	"fmt"

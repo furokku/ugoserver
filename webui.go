@@ -32,7 +32,7 @@ func (e *env) ui_account(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// TODO encrypt cookie
 		
-		user, err := getUserApiToken(e.pool, (*cookie).Value)
+		user, err := e.pool.getUserApiToken((*cookie).Value)
 		if err != nil {
 			errorlog.Printf("while fetching user from token in cookie: %v", err)
 		}

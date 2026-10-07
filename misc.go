@@ -222,8 +222,8 @@ func itob(i int) bool {
 }
 
 // age() calculates the age in years of a user from a session
-func (s Session) age() int {
-    t, err := time.Parse("20060102", s.Birthday)
+func age(bday string) int {
+    t, err := time.Parse("20060102", bday)
     if err != nil {
         return 0
     }
@@ -270,7 +270,7 @@ func (e *env) fillpage(sid string) (map[string]interface{}, error) {
     d := make(map[string]interface{})
     s := e.sessions[sid]
     
-    u, err := getUserByFsid(e.pool, s.FSID)
+    u, err := e.pool.getUserByFsid(s.FSID)
     if err != nil {
         warnlog.Printf("(user will be uninitialized) while getting user (%s) by fsid: %v", s.FSID, err)
     }

@@ -42,11 +42,21 @@ type (
 		Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 		QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	}
+	
+	// my reasoning for doing this, at least at 1 am on a random Tuesday, is that
+	// I want to be able to wrap a pgx.Tx in this and also keep the Tx code
+	// within the handler, so that I can use a set of base functions instead of
+	// writing a whole new function for that
+	//
+	// if this is bad practice, feel free to yell at me in an issue, I guess
+	DB struct {
+		dbhandle
+	}
 
 	// di yay
 	env struct {
 		sessions map[string]*Session
-		pool     dbhandle       // database connection pool
+		pool     *DB             // database connection pool
 		cnf      *Configuration // from config.json containing global options
 		fnkey    *rsa.PublicKey // flipnote signing key
 
@@ -121,7 +131,7 @@ type (
 
 	// Movie contains all information about a movie, including the amount of comments it has
 	// When building the feed, only ID and Ys are set, as nothing else is necessary
-	// However, when fetching a singular movie by its ID, all fields are populated
+	// However, when fetching a movie by its ID, all fields are populated
 	Movie struct {
 		ID        int
 		ChannelID int // allow multiple channels?

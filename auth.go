@@ -108,7 +108,7 @@ func (e *env) hatenaAuth(w http.ResponseWriter, r *http.Request) {
         // figure out if user has registered before,
         // whether logging in from the same ip
         // and obtain a user id
-        u, err := getUserByFsid(e.pool, req.FSID)
+        u, err := e.pool.getUserByFsid(req.FSID)
         if err != nil {
             switch err {
             case ErrNoUser:
@@ -224,7 +224,7 @@ func (e *env) nasAuth(w http.ResponseWriter, r *http.Request) {
             // with custom NAS
 
             if bssid == MELONDS_BSSID { // 00:F0:77 mac is unassigned. 100% emulator
-                if err := issueBan(e.pool, "auto", time.Now().Add(60 * time.Minute), ip, "emulator usage", true); err == ErrAlreadyBanned {
+                if err := e.pool.issueBan("auto", time.Now().Add(60 * time.Minute), ip, "emulator usage", true); err == ErrAlreadyBanned {
                     infolog.Printf("%v is already banned", ip)
                 } else if err != nil {
                     errorlog.Printf("failed to issue ban for %v: %v", ip, err)
@@ -270,18 +270,18 @@ func (e *env) nasAuth(w http.ResponseWriter, r *http.Request) {
 // validate() method will take a session and check if the user is banned or otherwise has any inconsistencies
 func (e *env) validate(a Session) (*Ban, error) {
 
-    if ok, err := whitelistQueryFsid(e.pool, a.FSID); err != nil {
+    if ok, err := e.pool.whitelistQueryFsid(a.FSID); err != nil {
         return nil, err
     } else if ok {
         return nil, nil
     }
 
-    if r, err := queryBan(e.pool, a.FSID); err != nil {
+    if r, err := e.pool.queryBan(a.FSID); err != nil {
         return nil, err
     } else if r != nil {
         return r, ErrFsidBan
     }
-    if r, err := queryBan(e.pool, a.IP); err != nil {
+    if r, err := e.pool.queryBan(a.IP); err != nil {
         return nil, err
     } else if r != nil {
         return r, ErrIpBan
@@ -296,7 +296,7 @@ func (e *env) validate(a Session) (*Ban, error) {
     if a.MAC == "0009BF112233" {
         return nil, ErrAuthEmulatorMac
     }
-    if a.age() < 13 {
+    if age(a.Birthday) < 13 {
         return nil, ErrAuthUnderage
     }
 
@@ -454,7 +454,7 @@ func (e *env) sa_login_kbd(w http.ResponseWriter, r *http.Request) {
         u.Add("rd", rd)
     }
     
-    if v, err := verifyUserById(e.pool, s.UserID, pw, s.IP); err != nil {
+    if v, err := e.pool.verifyUserById(s.UserID, pw, s.IP); err != nil {
         // handle error
         errorlog.Printf("while verifying user %d, %v", s.UserID, err)
         u.Add("ret", "error")
@@ -494,7 +494,7 @@ func (e *env) sa_reg_kbd(w http.ResponseWriter, r *http.Request) {
         u.Add("rd", rd)
     }
     
-    id, err := registerUserDsi(e.pool, s.Username, pw, s.FSID, s.IP)
+    id, err := e.pool.registerUserDsi(s.Username, pw, s.FSID, s.IP)
     if err != nil {
         errorlog.Printf("while registering user: %v", err)
         u.Add("ret", "error")
@@ -547,7 +547,7 @@ func (e *env) api_auth(w http.ResponseWriter, r *http.Request) {
         }
         
         // for now last login is only tracked on the dsi
-        success, err := verifyUserById(e.pool, id, lf.Get("pw"))
+        success, err := e.pool.verifyUserById(id, lf.Get("pw"))
         if err != nil {
             errorlog.Printf("while verifying user id: %v", err)
             w.WriteHeader(http.StatusInternalServerError)
@@ -557,7 +557,7 @@ func (e *env) api_auth(w http.ResponseWriter, r *http.Request) {
         
         if success {
             // login cookie
-            secret, err := newApiToken(e.pool, id)
+            secret, err := e.pool.newApiToken(id)
             if err != nil {
                 errorlog.Printf("while creating new api token for user %d: %v", id, err)
                 w.WriteHeader(http.StatusInternalServerError)

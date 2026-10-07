@@ -29,7 +29,7 @@ func (e *env) whitelist(args []string) string {
     
     switch args[0] {
     case "add":
-        if err := whitelistAddFsid(e.pool, fsid); err != nil {
+        if err := e.pool.whitelistAddFsid(fsid); err != nil {
             errorlog.Printf("while adding to whitelist: %v", err)
             return err.Error()
 		}
@@ -37,7 +37,7 @@ func (e *env) whitelist(args []string) string {
         return fmt.Sprintf("added %s", fsid)
 
     case "del":
-        if err := whitelistDelFsid(e.pool, fsid); err != nil {
+        if err := e.pool.whitelistDelFsid(fsid); err != nil {
             errorlog.Printf("while removing from whitelist: %v", err)
             return err.Error()
         }
@@ -45,7 +45,7 @@ func (e *env) whitelist(args []string) string {
         return fmt.Sprintf("removed %s", fsid)
         
     case "query":
-        if w, err := whitelistQueryFsid(e.pool, fsid); err != nil {
+        if w, err := e.pool.whitelistQueryFsid(fsid); err != nil {
             errorlog.Printf("while querying whitelist: %v", err)
             return err.Error()
         } else {
@@ -137,7 +137,7 @@ func (e *env) ban(args []string) string {
         }
     }
     
-    if err := issueBan(e.pool, "console", t, target, msg, false); err != nil {
+    if err := e.pool.issueBan("console", t, target, msg, false); err != nil {
         errorlog.Printf("while banning %s: %v", target, err)
         return err.Error()
     }
