@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
-	"time"
+    "fmt"
+    "strconv"
+    "time"
 )
 
 const (
-	WHITELIST_USAGE string = "usage: whitelist add|del|query FSID"
-	RELOAD_USAGE string = "usage: reload web|menus|assets"
+    WHITELIST_USAGE string = "usage: whitelist add|del|query FSID"
+    RELOAD_USAGE string = "usage: reload web|menus|assets"
     BAN_USAGE string =  "usage: ban [-f] FSID/IP duration message"
 )
 
@@ -18,21 +18,21 @@ const (
 
 func (e *env) whitelist(args []string) string {
     
-	if len(args) != 2 {
-		return WHITELIST_USAGE
-	}
-	
-	fsid := args[1]
-	if !fsid_match.MatchString(fsid) {
-		return fmt.Sprintf("%s is not an fsid", fsid)
-	}
+    if len(args) != 2 {
+        return WHITELIST_USAGE
+    }
+    
+    fsid := args[1]
+    if !fsid_match.MatchString(fsid) {
+        return fmt.Sprintf("%s is not an fsid", fsid)
+    }
     
     switch args[0] {
     case "add":
         if err := e.pool.whitelistAddFsid(fsid); err != nil {
             errorlog.Printf("while adding to whitelist: %v", err)
             return err.Error()
-		}
+        }
         
         return fmt.Sprintf("added %s", fsid)
 
@@ -59,36 +59,36 @@ func (e *env) whitelist(args []string) string {
 
 // reload static content (ugomenus, html templates) and config
 func (e *env) reload(args []string) string {
-	
-	if len(args) != 1 {
-		return RELOAD_USAGE
-	}
-	
-	switch args[0] {
-	case "menus":
-		if err := e.load_menus(true); err != nil {
+    
+    if len(args) != 1 {
+        return RELOAD_USAGE
+    }
+    
+    switch args[0] {
+    case "menus":
+        if err := e.load_menus(true); err != nil {
             errorlog.Printf("load_menus: %v", err)
             return "internal error; check logs (load_menus)"
         }
-		return "ok"
+        return "ok"
 
-	case "web":
-		if err := e.load_html(true); err != nil {
+    case "web":
+        if err := e.load_html(true); err != nil {
             errorlog.Printf("load_html: %v", err)
             return "internal error; check logs (load_html)"
         }
-		return "ok"
+        return "ok"
         
-	case "assets":
-		if err := e.load_assets(true); err != nil {
+    case "assets":
+        if err := e.load_assets(true); err != nil {
             errorlog.Printf("load_assets: %v", err)
             return "internal error; check logs (load_assets)"
         }
-		return "ok"
+        return "ok"
         
     default:
         return RELOAD_USAGE
-	}
+    }
 
 }
 

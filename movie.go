@@ -1,29 +1,29 @@
 package main
 
 import (
-	"context"
-	"image"
-	"io"
-	"os"
-	"time"
+    "context"
+    "image"
+    "io"
+    "os"
+    "time"
 
-	"fmt"
+    "fmt"
 
-	"net/http"
+    "net/http"
 
-	"image/color/palette"
-	"image/png"
+    "image/color/palette"
+    "image/png"
 
-	"github.com/KononK/resize"
-	"github.com/esimov/colorquant"
-	"github.com/gorilla/mux"
+    "github.com/KononK/resize"
+    "github.com/esimov/colorquant"
+    "github.com/gorilla/mux"
 
-	"encoding/binary"
-	"encoding/hex"
-	"strconv"
-	"strings"
+    "encoding/binary"
+    "encoding/hex"
+    "strconv"
+    "strings"
 
-	"floc/ugoserver/nx"
+    "floc/ugoserver/nx"
 )
 
 const (

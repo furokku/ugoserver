@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
+    "fmt"
+    "io"
+    "net/http"
+    "net/url"
 
-	"time"
+    "time"
 
-	"slices"
-	"strconv"
-	"strings"
-	// debug
-	//"bytes"
+    "slices"
+    "strconv"
+    "strings"
+    // debug
+    //"bytes"
 )
 
 const (
@@ -214,7 +214,7 @@ func (e *env) nasAuth(w http.ResponseWriter, r *http.Request) {
         case "/ac":
 
             // check game code
-	    //gcdr := nasRequest.Get("gamecd") // KGUE (U), KGUV (E), KGUJ (J)
+        //gcdr := nasRequest.Get("gamecd") // KGUE (U), KGUV (E), KGUJ (J)
             bssid := nasRequest.Get("bssid")
             // Emulator check
             // Most users who try to use an emulator won't

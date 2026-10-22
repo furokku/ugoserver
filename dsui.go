@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
+    "fmt"
+    "strconv"
 
-	"net/http"
+    "net/http"
 
-	"github.com/gorilla/mux"
+    "github.com/gorilla/mux"
 )
 
 func (e *env) eula(w http.ResponseWriter, r *http.Request) {
@@ -238,17 +238,17 @@ func (e *env) profile(w http.ResponseWriter, r *http.Request) {
             return
         }
     }
-	
-	// get that user's stars
-	us, err := e.pool.getUserStars(u.ID)
-	if err != nil {
-		errorlog.Printf("while getting user %d stars (profile view): %v", view, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+    
+    // get that user's stars
+    us, err := e.pool.getUserStars(u.ID)
+    if err != nil {
+        errorlog.Printf("while getting user %d stars (profile view): %v", view, err)
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
     
     d["vuser"] = u
-	d["vuserstars"] = us
+    d["vuserstars"] = us
     
     e.html.ExecuteTemplate(w, "profile.html", d)
 }
@@ -273,12 +273,12 @@ func (e *env) misc(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
     case "/ds/v2-us/":
         w.Write(e.assets["images/ds/8x8test.npf"])
-	case "/robots.txt":
-		b, ok := e.assets["text/robots.txt"]
-		if !ok {
-			b = []byte("beep boop bitch")
-		}
-		w.Write(b)
+    case "/robots.txt":
+        b, ok := e.assets["text/robots.txt"]
+        if !ok {
+            b = []byte("beep boop bitch")
+        }
+        w.Write(b)
     }
     
 }

@@ -1,20 +1,20 @@
 package main
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
+    "crypto/rsa"
+    "crypto/x509"
 
-	"io/fs"
-	"os"
+    "io/fs"
+    "os"
 
-	"encoding/json"
-	"html/template"
+    "encoding/json"
+    "html/template"
 
-	"context"
-	"fmt"
-	"strings"
+    "context"
+    "fmt"
+    "strings"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+    "github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -70,11 +70,11 @@ func (e *env) load_html(reload bool) error {
     if reload {
         infolog.Println("load_html: manual reload requested")
     }
-	
-	// clear map contents
-	//if reload {
-	//	templates = make(map[string]*template.Template)
-	//}
+    
+    // clear map contents
+    //if reload {
+    //    templates = make(map[string]*template.Template)
+    //}
     // Better way to do this, as this will break things if it
     // fails to hot-reload
     
@@ -126,11 +126,11 @@ func (e *env) load_menus(reload bool) error {
     if reload {
         infolog.Println("load_menus: manual reload requested")
     }
-	
-	//clear map contents before reloading
-	//if reload {
-	//	menus = make(map[string]Ugomenu)
-	//}
+    
+    //clear map contents before reloading
+    //if reload {
+    //    menus = make(map[string]Ugomenu)
+    //}
     // Better way to do this, as this will break things if it
     // fails to hot-reload
     //m := make(map[string]Ugomenu)

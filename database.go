@@ -1,10 +1,10 @@
 package main
 
 import (
-	"context"
-	"time"
+    "context"
+    "time"
 
-	"github.com/jackc/pgx/v5"
+    "github.com/jackc/pgx/v5"
 )
 
 const (
