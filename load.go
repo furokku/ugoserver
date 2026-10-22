@@ -1,20 +1,20 @@
 package main
 
 import (
-    "crypto/rsa"
-    "crypto/x509"
+	"crypto/rsa"
+	"crypto/x509"
 
-    "io/fs"
-    "os"
+	"io/fs"
+	"os"
 
-    "encoding/json"
-    "html/template"
+	"encoding/json"
+	"html/template"
 
-    "context"
-    "fmt"
-    "strings"
+	"context"
+	"fmt"
+	"strings"
 
-    "github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -29,7 +29,7 @@ const (
 )
 
 // Load config file
-func (e *env) load_config(reload bool) error {
+func load_config(reload bool) (*Configuration, error) {
     cf := "config.json"
 
     if reload {
@@ -39,25 +39,24 @@ func (e *env) load_config(reload bool) error {
     if len(os.Args) > 1 {
         cf = os.Args[1]
         if len(os.Args) > 2 {
-            warnlog.Println("load_config: extra arguments were passed; only the first arg specifies config file, rest are ignored")
+            fmt.Println("load_config: extra arguments were passed; only the first arg specifies config file, rest are ignored")
         }
     }
 
     cb, err := os.ReadFile(cf)
     if err != nil {
-        return err
+        return nil, err
     }
 
     c := Configuration{}
     err = json.Unmarshal(cb, &c)
     if err != nil {
-        return err
+        return nil, err
     }
 
-    e.cnf = &c
-    infolog.Printf("load_config: loaded %s", cf)
+    fmt.Printf("load_config: loaded %s\n", cf)
     
-    return nil
+    return &c, nil
 }
 
 // load html templates from static/template/*.html and css files
@@ -240,14 +239,12 @@ func (e *env) initrsa() error {
 }
 
 
-func initenv() (*env, error) {
+func initenv(c *Configuration) (*env, error) {
     e := &env{
         sessions: make(map[string]*Session),
     }
     
-    if err := e.load_config(false); err != nil {
-        return nil, err
-    }
+    e.cnf = c
     
     if err := e.load_html(false); err != nil {
         errorlog.Printf("failed to load html assets: %v", err)

@@ -62,24 +62,14 @@ var (
 )
 
 func main() {
-    
-
 
     fmt.Println("starting ugoserver")
     defer fmt.Println("goodbye!")
-    //
-    // local environment
-    e, err := initenv()
-    if err != nil {
-        panic(fmt.Sprintf("failed to initialize: %v", err))
-    }
-
-    //// listen for ^C
-    sigs := make(chan os.Signal, 1)
-    signal.Notify(sigs, os.Interrupt)
-
-    if e.cnf.LogFile != "stdout" {
-        l, err := os.OpenFile(e.cnf.LogFile, os.O_WRONLY|os.O_CREATE, 0644)
+    
+    c, err := load_config(false)
+    
+    if c.LogFile != "stdout" {
+        l, err := os.OpenFile(c.LogFile, os.O_WRONLY|os.O_CREATE, 0644)
         if err != nil {
             fmt.Println("warning: could not open specified log file, defaulting to stdout")
             initlog(os.Stdout)
@@ -89,6 +79,16 @@ func main() {
     } else {
         initlog(os.Stdout)
     }
+
+    // local environment
+    e, err := initenv(c)
+    if err != nil {
+        panic(fmt.Sprintf("failed to initialize: %v", err))
+    }
+
+    // listen for ^C
+    sigs := make(chan os.Signal, 1)
+    signal.Notify(sigs, os.Interrupt)
 
     // hatena auth/general http server
     //
