@@ -14,6 +14,9 @@
     "comment_e": "storage for all things that need to be written to disk",
     "store_dir": "/srv/hatena-storage",
     
+    "_comment_h": "file to use for log. put stdout to use default os.Stdout",
+    "logfile": "stdout",
+    
     "db": {
         "host": "localhost",
         "port": 5432,

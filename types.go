@@ -1,19 +1,18 @@
 package main
 
 import (
-    "crypto/rsa"
+	"crypto/rsa"
 
-    "context"
-    "sync"
-    "time"
+	"context"
+	"sync"
+	"time"
 
-    "html/template"
-    "log"
-    "net"
-    "net/http"
+	"html/template"
+	"net"
+	"net/http"
 
-    "github.com/jackc/pgx/v5"
-    "github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type (
@@ -75,6 +74,7 @@ type (
         Root     string `json:"root"`
         Dir      string `json:"dir"`
         StoreDir string `json:"store_dir"`
+        LogFile  string `json:"logfile"`
 
         DB struct {
             Host string `json:"host"`
@@ -258,15 +258,15 @@ type (
     //     Return string
     // }
     
-    loglevel struct {
-        *log.Logger
-    }
-    
-    logger interface {
-        // only these three methods on a logger are used
-        // no reason to add all of them really
-        Printf(string, ...any)
-        Fatalf(string, ...any)
-        Println(...any)
-    }
+//    loglevel struct {
+//        *log.Logger
+//    }
+//    
+//    logger interface {
+//        // only these three methods on a logger are used
+//        // no reason to add all of them really
+//        Printf(string, ...any)
+//        Fatalf(string, ...any)
+//        Println(...any)
+//    }
 )

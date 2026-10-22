@@ -42,16 +42,16 @@ package main
 // probably also make the logger not global :/
 
 import (
-    "fmt"
+	"fmt"
 
-    "net/http"
+	"net/http"
 
-    "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 
-    "context"
-    "os"
-    "os/signal"
-    "time"
+	"context"
+	"os"
+	"os/signal"
+	"time"
 )
 
 var (
@@ -62,60 +62,33 @@ var (
 )
 
 func main() {
+    
 
-    infolog.Println("starting ugoserver")
-    defer infolog.Println("goodbye!")
+
+    fmt.Println("starting ugoserver")
+    defer fmt.Println("goodbye!")
     //
     // local environment
     e, err := initenv()
     if err != nil {
-        errorlog.Fatalf("failed to initialize: %v", err)
+        panic(fmt.Sprintf("failed to initialize: %v", err))
     }
-    //
-    //// barzo dzekuje
-    //// mmmmm boilerplate
-    //if err := e.load_config(false); err != nil {
-    //    errorlog.Fatalf("failed to load configuration: %v", err)
-    //}
-
-    //if err := e.load_html(false); err != nil {
-    //    errorlog.Printf("failed to load html assets: %v", err)
-    //}
-    //if err := e.load_assets(false); err != nil {
-    //    errorlog.Printf("failed to load other assets: %v", err)
-    //}
-
-    //if err := e.load_menus(false); err != nil {
-    //    errorlog.Printf("failed to load menus: %v", err)
-    //}
 
     //// listen for ^C
     sigs := make(chan os.Signal, 1)
     signal.Notify(sigs, os.Interrupt)
 
-    //// connect to db
-    //pc, err := pgxpool.ParseConfig(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", e.cnf.DB.Host, e.cnf.DB.Port, e.cnf.DB.User, e.cnf.DB.Pass, e.cnf.DB.Name))
-    //if err != nil {
-    //    errorlog.Fatalf("could not parse db config: %v", err)
-    //}
-    //
-    //// we learning how to golang gng
-    //pool, err := pgxpool.NewWithConfig(context.Background(), pc)
-    //if err != nil {
-    //    errorlog.Fatalf("could not create new db pool: %v", err)
-    //}
-    //e.pool = pool
-    //
-    //if err := pool.Ping(context.Background()); err != nil {
-    //    errorlog.Fatalf("could not establish connection to database: %v", err)
-    //}
-
-    //infolog.Printf("connected to database")
-
-    // start a thread to remove old, expired sessions
-    // the time for a session to expire is 2 hours
-    // may change later if needed
-    //go pruneSids(e.sessions)
+    if e.cnf.LogFile != "stdout" {
+        l, err := os.OpenFile(e.cnf.LogFile, os.O_WRONLY|os.O_CREATE, 0644)
+        if err != nil {
+            fmt.Println("warning: could not open specified log file, defaulting to stdout")
+            initlog(os.Stdout)
+        } else {
+            initlog(l)
+        }
+    } else {
+        initlog(os.Stdout)
+    }
 
     // hatena auth/general http server
     //
