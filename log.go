@@ -1,11 +1,11 @@
 package main
 
 import (
-	"io"
-	"log"
-	"net/http"
-	"slices"
-	"strings"
+    "io"
+    "log"
+    "net/http"
+    "slices"
+    "strings"
 )
 
 const colorReset string = "\033[0m"

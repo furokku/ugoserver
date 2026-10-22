@@ -42,16 +42,16 @@ package main
 // probably also make the logger not global :/
 
 import (
-	"fmt"
+    "fmt"
 
-	"net/http"
+    "net/http"
 
-	"github.com/gorilla/mux"
+    "github.com/gorilla/mux"
 
-	"context"
-	"os"
-	"os/signal"
-	"time"
+    "context"
+    "os"
+    "os/signal"
+    "time"
 )
 
 var (
