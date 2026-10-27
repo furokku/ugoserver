@@ -1,10 +1,10 @@
 package main
 
 import (
-    "crypto/rsa"
-    "embed"
-    "errors"
-    "testing"
+	"crypto/rsa"
+	"embed"
+	"errors"
+	"testing"
 )
 
 //go:embed "assets/special/embed/*.ppm"
@@ -55,14 +55,8 @@ func TestVerifyRsa(t *testing.T) {
     
     for name, test := range tests {
         err := e.verifyrsa(test.in_ppm)
-        if err != nil {
-            if test.expect_error {
-                if !errors.Is(err, test.err) {
-                    t.Fatalf("expected %q, got %q", test.err, err)
-                }
-            } else {
-                t.Fatalf("test %s on verifyrsa failed with %v", name, err)
-            }
+        if !errors.Is(err, test.err) {
+            t.Fatalf("test %s failed: expected %q, got %q", name, test.err, err)
         }
     }
 }
